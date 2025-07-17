@@ -1,104 +1,24 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import Modal from "./Modal";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Modal from "./components/Modal";
+import { useTTLockEncode, useTTLockOfflineEncode } from "./hooks/useTTLockApi";
+import { TTLockData, GuestInfo } from "./types/ttlock";
+import { isEncodeKeyButton } from "./utils/buttonUtils";
 import "./styles.css";
 
-interface OfflineData {
-  type: "offline";
-  buildingNumber: string;
-  floorNumber: string;
-  lockMac: string;
-  cardNumber: string;
-  cardName: string;
-  cardType: string;
-  addType: string;
-  startDate: string;
-  expireDate: string;
-}
-
-interface GatewayData {
-  type: "gateway";
-  guestName: string;
-  roomNumber: string;
-  buildingNumber: string;
-  floorNumber: string;
-  clientId: string;
-  accessToken: string;
-  lockId: string;
-  cardNumber: string;
-  cardName: string;
-  cardType: string;
-  addType: string;
-  startDate: string;
-  expireDate: string;
-}
-
-type TTLockData = OfflineData | GatewayData;
-
-// Function to find the button element (handles clicks on child elements)
-function findButtonElement(element: Element | null): Element | null {
-  if (!element) return null;
-
-  // If it's already a button, return it
-  if (element.tagName === "BUTTON") {
-    return element;
-  }
-
-  // Walk up the DOM tree to find the button
-  let current = element.parentElement;
-  while (current && current !== document.body) {
-    if (current.tagName === "BUTTON") {
-      return current;
-    }
-    current = current.parentElement;
-  }
-
-  return null;
-}
-
-// Function to detect Encode Key button
-function isEncodeKeyButton(element: Element): boolean {
-  const button = findButtonElement(element);
-  if (!button) return false;
-
-  console.log("🔍 Checking button:", button.textContent?.trim());
-
-  // Check if button contains "Encode Key" text
-  const buttonText = button.textContent?.trim().toLowerCase() || "";
-  if (buttonText.includes("encode key")) {
-    console.log("✅ Found Encode Key button by text!");
-    return true;
-  }
-
-  // Check for the lucide-key-round SVG icon
-  const svg = button.querySelector("svg.lucide-key-round");
-  if (svg) {
-    console.log("✅ Found Encode Key button by SVG icon!");
-    return true;
-  }
-
-  // Check for the specific SVG path for key-round icon
-  const svgPaths = button.querySelectorAll("svg path");
-  if (svgPaths.length >= 1) {
-    const pathData = [];
-    for (let i = 0; i < svgPaths.length; i++) {
-      pathData.push(svgPaths[i].getAttribute("d"));
-    }
-    if (
-      pathData.includes(
-        "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-      )
-    ) {
-      console.log("✅ Found Encode Key button by SVG path data!");
-      return true;
-    }
-  }
-
-  return false;
-}
+// Create a query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 // Function to scrape guest name and room number from the page
-function scrapeGuestInfo(): { guestName: string; roomNumber: string } {
+function scrapeGuestInfo(): GuestInfo {
   console.log("🔍 Scraping guest information from page...");
 
   let guestName = "";
@@ -269,14 +189,23 @@ function scrapeGuestInfo(): { guestName: string; roomNumber: string } {
   return { guestName, roomNumber };
 }
 
-// Function to handle the encode action
-function handleEncode(data: TTLockData) {
-  console.log("🔑 Encoding TTLock data:", data);
+// React component that uses hooks
+const ModalWithHooks: React.FC<{
+  guestName: string;
+  roomNumber: string;
+  onClose: () => void;
+}> = ({ guestName, roomNumber, onClose }) => {
+  const gatewayEncode = useTTLockEncode();
+  const offlineEncode = useTTLockOfflineEncode();
 
-  // Here you can add the actual encoding logic
-  // For now, we'll just log the data and show a success message
-  if (data.type === "offline") {
-    alert(`Encoding TTLock (Offline) with data:
+  const handleEncode = async (data: TTLockData) => {
+    console.log("🔑 Encoding TTLock data:", data);
+
+    if (data.type === "offline") {
+      try {
+        await offlineEncode.mutateAsync(data);
+
+        alert(`Encoding TTLock (Offline) with data:
 Building: ${data.buildingNumber}
 Floor: ${data.floorNumber}
 Lock MAC: ${data.lockMac}
@@ -286,35 +215,64 @@ Card Type: ${data.cardType}
 Add Type: ${data.addType}
 Start Date: ${data.startDate}
 Expire Date: ${data.expireDate}`);
-  } else {
-    alert(`Encoding TTLock (Gateway) with data:
+      } catch (error) {
+        console.error("❌ Offline encoding error:", error);
+        alert(
+          `❌ Offline encoding failed: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    } else {
+      try {
+        const response = await gatewayEncode.mutateAsync(data);
+
+        if (response.success) {
+          alert(`✅ Key encoded successfully via TTLock API!
+
 Guest: ${data.guestName}
 Room: ${data.roomNumber}
 Building: ${data.buildingNumber}
 Floor: ${data.floorNumber}
-Client ID: ${data.clientId}
-Access Token: ${data.accessToken}
 Lock ID: ${data.lockId}
 Card Number: ${data.cardNumber}
 Card Name: ${data.cardName}
-Card Type: ${data.cardType}
-Add Type: ${data.addType}
-Start Date: ${data.startDate}
-Expire Date: ${data.expireDate}`);
-  }
 
-  // Close the modal after successful encoding
-  const modalContainer = document.getElementById("encode-key-monitor-modal");
-  if (modalContainer) {
-    modalContainer.remove();
-  }
-}
+API Response: ${JSON.stringify(response.data, null, 2)}`);
+        } else {
+          alert(
+            `❌ Key encoding failed: ${response.message || "Unknown error"}`
+          );
+        }
+      } catch (error) {
+        console.error("❌ Gateway encoding error:", error);
+        alert(
+          `❌ Key encoding failed: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    }
 
-// Function to show modal
+    // Close the modal after processing
+    onClose();
+  };
+
+  return (
+    <Modal
+      guestName={guestName}
+      roomNumber={roomNumber}
+      onClose={onClose}
+      onEncode={handleEncode}
+    />
+  );
+};
+
+// Function to show modal with React Query provider
 function showModal() {
   console.log("🎉 Opening TTLock encode modal");
 
-  // Scrape guest information from the page
+  // Scrape guest information from the page BEFORE creating the modal
   const { guestName, roomNumber } = scrapeGuestInfo();
 
   // Remove existing modal if present
@@ -323,48 +281,36 @@ function showModal() {
     existingModal.remove();
   }
 
-  // Create modal container
+  // Create modal container with minimal interference
   const modalContainer = document.createElement("div");
   modalContainer.id = "encode-key-monitor-modal";
   modalContainer.style.cssText = `
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 999999;
-    pointer-events: auto;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
   `;
 
-  // Prevent the modal from interfering with browser zoom
-  modalContainer.addEventListener(
-    "wheel",
-    (e) => {
-      // Only prevent default if the event is not a zoom gesture
-      if (!e.ctrlKey && !e.metaKey) {
-        e.stopPropagation();
-      }
-    },
-    { passive: true }
-  );
-
+  // Append to body without affecting layout
   document.body.appendChild(modalContainer);
 
-  // Create React root and render modal
+  // Create React root and render modal with QueryClient provider
   const root = createRoot(modalContainer);
+
   root.render(
-    <Modal
-      guestName={guestName}
-      roomNumber={roomNumber}
-      onClose={() => {
-        console.log("🔄 Closing TTLock encode modal");
-        modalContainer.remove();
-      }}
-      onEncode={handleEncode}
-    />
+    <QueryClientProvider client={queryClient}>
+      <ModalWithHooks
+        guestName={guestName}
+        roomNumber={roomNumber}
+        onClose={() => {
+          console.log("🔄 Closing TTLock encode modal");
+          modalContainer.remove();
+        }}
+      />
+    </QueryClientProvider>
   );
 }
 
@@ -382,18 +328,6 @@ function handleClick(event: Event) {
     return;
   }
 
-  // Don't interfere with browser UI elements
-  if (
-    target.closest('chrome-extension-ui, [role="toolbar"], [role="menubar"]')
-  ) {
-    return;
-  }
-
-  // Don't interfere with system dialogs or zoom controls
-  if (target.closest('[aria-label*="zoom"], [aria-label*="Zoom"]')) {
-    return;
-  }
-
   console.log(
     "🖱️ Click detected on:",
     target.tagName,
@@ -402,7 +336,6 @@ function handleClick(event: Event) {
 
   if (isEncodeKeyButton(target)) {
     console.log("🎯 Encode Key button clicked!");
-    event.stopPropagation(); // Only stop propagation for our target button
     showModal();
   }
 }

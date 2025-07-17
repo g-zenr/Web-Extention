@@ -1,47 +1,190 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Completely isolated CSS for our modal - no global interference */
 
-@layer components {
-  .modal-slide-in {
-    animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+#encode-key-monitor-modal .modal-slide-in {
+  animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-  .modal-overlay {
-    animation: modalOverlayFadeIn 0.2s ease-out;
-  }
+#encode-key-monitor-modal .modal-overlay {
+  animation: modalOverlayFadeIn 0.2s ease-out;
+}
 
-  .modal-input {
-    @apply w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/90 transition-all duration-200 focus:outline-none focus:ring-4 focus:bg-white hover:bg-white placeholder:text-slate-400;
-  }
+#encode-key-monitor-modal .modal-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
 
-  .modal-input-emerald {
-    @apply modal-input focus:border-emerald-500 focus:ring-emerald-100;
-  }
+#encode-key-monitor-modal .modal-input:focus {
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+}
 
-  .modal-input-orange {
-    @apply modal-input focus:border-orange-500 focus:ring-orange-100;
-  }
+#encode-key-monitor-modal .modal-input:hover {
+  background-color: white;
+}
 
-  .modal-input-red {
-    @apply modal-input focus:border-red-500 focus:ring-red-100;
-  }
+#encode-key-monitor-modal .modal-input::placeholder {
+  color: #9ca3af;
+}
 
-  .modal-input-indigo {
-    @apply modal-input focus:border-indigo-500 focus:ring-indigo-100;
-  }
+#encode-key-monitor-modal .modal-input-emerald {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
 
-  .modal-input-cyan {
-    @apply modal-input focus:border-cyan-500 focus:ring-cyan-100;
-  }
+#encode-key-monitor-modal .modal-input-emerald:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  background-color: white;
+}
 
-  .modal-input-pink {
-    @apply modal-input focus:border-pink-500 focus:ring-pink-100;
-  }
+#encode-key-monitor-modal .modal-input-emerald:hover {
+  background-color: white;
+}
 
-  .modal-select {
-    @apply modal-input appearance-none cursor-pointer;
-  }
+#encode-key-monitor-modal .modal-input-emerald::placeholder {
+  color: #9ca3af;
+}
+
+#encode-key-monitor-modal .modal-input-orange {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
+
+#encode-key-monitor-modal .modal-input-orange:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-orange:hover {
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-orange::placeholder {
+  color: #9ca3af;
+}
+
+#encode-key-monitor-modal .modal-input-red {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
+
+#encode-key-monitor-modal .modal-input-red:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-red:hover {
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-red::placeholder {
+  color: #9ca3af;
+}
+
+#encode-key-monitor-modal .modal-input-indigo {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
+
+#encode-key-monitor-modal .modal-input-indigo:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-indigo:hover {
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-indigo::placeholder {
+  color: #9ca3af;
+}
+
+#encode-key-monitor-modal .modal-input-cyan {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
+
+#encode-key-monitor-modal .modal-input-cyan:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-cyan:hover {
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-cyan::placeholder {
+  color: #9ca3af;
+}
+
+#encode-key-monitor-modal .modal-input-pink {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+  outline: none;
+}
+
+#encode-key-monitor-modal .modal-input-pink:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-pink:hover {
+  background-color: white;
+}
+
+#encode-key-monitor-modal .modal-input-pink::placeholder {
+  color: #9ca3af;
+}
+
+#encode-key-monitor-modal .modal-select {
+  appearance: none;
+  cursor: pointer;
 }
 
 @keyframes modalSlideIn {
@@ -64,21 +207,21 @@
   }
 }
 
-/* Better scrollbar styling for webkit browsers */
-::-webkit-scrollbar {
+/* Better scrollbar styling for webkit browsers - scoped to modal */
+#encode-key-monitor-modal ::-webkit-scrollbar {
   width: 8px;
 }
 
-::-webkit-scrollbar-track {
+#encode-key-monitor-modal ::-webkit-scrollbar-track {
   background: #f3f4f6;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb {
+#encode-key-monitor-modal ::-webkit-scrollbar-thumb {
   background: #9ca3af;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+#encode-key-monitor-modal ::-webkit-scrollbar-thumb:hover {
   background: #6b7280;
 }

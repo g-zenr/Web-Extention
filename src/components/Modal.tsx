@@ -1,43 +1,10 @@
 import React, { useState } from "react";
-
-interface OfflineData {
-  type: "offline";
-  buildingNumber: string;
-  floorNumber: string;
-  lockMac: string;
-  cardNumber: string;
-  cardName: string;
-  cardType: string;
-  addType: string;
-  startDate: string;
-  expireDate: string;
-}
-
-interface GatewayData {
-  type: "gateway";
-  guestName: string;
-  roomNumber: string;
-  buildingNumber: string;
-  floorNumber: string;
-  clientId: string;
-  accessToken: string;
-  lockId: string;
-  cardNumber: string;
-  cardName: string;
-  cardType: string;
-  addType: string;
-  startDate: string;
-  expireDate: string;
-}
-
-type TTLockData = OfflineData | GatewayData;
-
-interface ModalProps {
-  guestName: string;
-  roomNumber: string;
-  onClose: () => void;
-  onEncode: (data: TTLockData) => void;
-}
+import {
+  ModalProps,
+  OfflineData,
+  GatewayData,
+  TTLockData,
+} from "../types/ttlock";
 
 const Modal: React.FC<ModalProps> = ({
   guestName,
@@ -530,45 +497,114 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex justify-center items-center z-[999999] p-4 animate-in fade-in duration-200"
       onClick={onClose}
       style={{
-        transform: "translateZ(0)",
-        willChange: "transform",
-        isolation: "isolate",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
+        padding: "1rem",
+        pointerEvents: "auto",
       }}
     >
       <div
-        className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in slide-in-from-bottom-4 fade-in duration-300 border border-slate-200"
         onClick={(e) => e.stopPropagation()}
         style={{
-          transform: "translateZ(0)",
-          willChange: "transform",
+          backgroundColor: "white",
+          borderRadius: "1.5rem",
+          width: "100%",
+          maxWidth: "56rem",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+          position: "relative",
+          border: "1px solid #e2e8f0",
         }}
       >
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-6 rounded-t-3xl flex justify-between items-center z-10 shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-2xl shadow-lg animate-pulse">
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            background: "linear-gradient(to right, #0f172a, #1e293b, #0f172a)",
+            color: "white",
+            padding: "1.5rem",
+            borderTopLeftRadius: "1.5rem",
+            borderTopRightRadius: "1.5rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            zIndex: 10,
+            boxShadow:
+              "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div
+              style={{
+                width: "3.5rem",
+                height: "3.5rem",
+                background:
+                  "linear-gradient(to bottom right, #facc15, #f97316)",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.5rem",
+                boxShadow:
+                  "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+              }}
+            >
               🔑
             </div>
             <div>
-              <h2 className="text-2xl font-bold mb-1">
+              <h2
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  marginBottom: "0.25rem",
+                }}
+              >
                 Key Encoding Assistant
               </h2>
-              <p className="text-sm text-slate-300">
+              <p style={{ fontSize: "0.875rem", color: "#cbd5e1" }}>
                 Configure your smart lock credentials
               </p>
             </div>
           </div>
           <button
-            className="w-12 h-12 bg-white/10 border border-white/20 text-white rounded-full transition-all duration-200 hover:bg-white/20 hover:scale-110 active:scale-95 flex items-center justify-center text-xl font-bold"
             onClick={onClose}
+            style={{
+              width: "3rem",
+              height: "3rem",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "white",
+              borderRadius: "50%",
+              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "1.25rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
           >
             ×
           </button>
         </div>
 
-        <div className="p-8 bg-gradient-to-br from-slate-50 to-white">
+        <div
+          style={{
+            padding: "2rem",
+            background: "linear-gradient(to bottom right, #f8fafc, white)",
+          }}
+        >
           {renderTypeSelection()}
           {selectedType === "gateway" && renderGuestSection()}
           {selectedType && renderLocationSection()}
@@ -578,22 +614,61 @@ const Modal: React.FC<ModalProps> = ({
           {selectedType && renderTimeSection()}
         </div>
 
-        <div className="sticky bottom-0 flex justify-end gap-4 p-6 bg-white/90 border-t border-slate-200 rounded-b-3xl">
+        <div
+          style={{
+            position: "sticky",
+            bottom: 0,
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "1rem",
+            padding: "1.5rem",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            borderTop: "1px solid #e2e8f0",
+            borderBottomLeftRadius: "1.5rem",
+            borderBottomRightRadius: "1.5rem",
+          }}
+        >
           <button
-            className="px-6 py-3 border border-slate-300 bg-white rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-slate-50 hover:border-slate-400 active:scale-95 flex items-center gap-2 shadow-sm"
             onClick={onClose}
+            style={{
+              padding: "0.75rem 1.5rem",
+              border: "1px solid #cbd5e1",
+              backgroundColor: "white",
+              borderRadius: "0.75rem",
+              fontSize: "0.875rem",
+              fontWeight: "600",
+              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+              cursor: "pointer",
+            }}
           >
             <span>❌</span>
             Cancel
           </button>
           <button
-            className={`px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg transform hover:scale-105 active:scale-95 ${
-              selectedType
-                ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-emerald-500/25"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
             onClick={handleEncode}
             disabled={!selectedType}
+            style={{
+              padding: "0.75rem 2rem",
+              borderRadius: "0.75rem",
+              fontSize: "0.875rem",
+              fontWeight: "600",
+              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              boxShadow:
+                "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+              cursor: selectedType ? "pointer" : "not-allowed",
+              background: selectedType
+                ? "linear-gradient(to right, #10b981, #059669)"
+                : "#d1d5db",
+              color: selectedType ? "white" : "#9ca3af",
+              border: "none",
+            }}
           >
             <span>🚀</span>
             Encode Key
