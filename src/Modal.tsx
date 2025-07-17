@@ -201,7 +201,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="text"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+            className="modal-input-emerald"
             value={gatewayData.guestName}
             onChange={(e) =>
               handleGatewayInputChange("guestName", e.target.value)
@@ -216,7 +216,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="text"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+            className="modal-input-emerald"
             value={gatewayData.roomNumber}
             onChange={(e) =>
               handleGatewayInputChange("roomNumber", e.target.value)
@@ -244,7 +244,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="text"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+            className="modal-input-orange"
             value={
               selectedType === "offline"
                 ? offlineData.buildingNumber
@@ -265,7 +265,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="text"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+            className="modal-input-orange"
             value={
               selectedType === "offline"
                 ? offlineData.floorNumber
@@ -300,7 +300,7 @@ const Modal: React.FC<ModalProps> = ({
         </label>
         <input
           type="text"
-          className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+          className="modal-input-red"
           value={selectedType === "offline" ? offlineData.lockMac : ""}
           onChange={(e) => handleOfflineInputChange("lockMac", e.target.value)}
           placeholder="Enter lock MAC address"
@@ -328,7 +328,7 @@ const Modal: React.FC<ModalProps> = ({
             </label>
             <input
               type="text"
-              className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+              className="modal-input-indigo"
               value={gatewayData.clientId}
               onChange={(e) =>
                 handleGatewayInputChange("clientId", e.target.value)
@@ -343,7 +343,7 @@ const Modal: React.FC<ModalProps> = ({
             </label>
             <input
               type="text"
-              className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+              className="modal-input-indigo"
               value={gatewayData.accessToken}
               onChange={(e) =>
                 handleGatewayInputChange("accessToken", e.target.value)
@@ -359,7 +359,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="text"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+            className="modal-input-indigo"
             value={gatewayData.lockId}
             onChange={(e) => handleGatewayInputChange("lockId", e.target.value)}
             placeholder="Enter lock ID"
@@ -386,7 +386,7 @@ const Modal: React.FC<ModalProps> = ({
             </label>
             <input
               type="text"
-              className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+              className="modal-input-cyan"
               value={
                 selectedType === "offline"
                   ? offlineData.cardNumber
@@ -407,7 +407,7 @@ const Modal: React.FC<ModalProps> = ({
             </label>
             <input
               type="text"
-              className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 focus:bg-white hover:bg-white/80 placeholder:text-slate-400"
+              className="modal-input-cyan"
               value={
                 selectedType === "offline"
                   ? offlineData.cardName
@@ -429,7 +429,7 @@ const Modal: React.FC<ModalProps> = ({
               Card Type
             </label>
             <select
-              className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 focus:bg-white hover:bg-white/80 appearance-none cursor-pointer"
+              className="modal-input-cyan modal-select"
               value={
                 selectedType === "offline"
                   ? offlineData.cardType
@@ -453,7 +453,7 @@ const Modal: React.FC<ModalProps> = ({
               Add Type
             </label>
             <select
-              className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 focus:bg-white hover:bg-white/80 appearance-none cursor-pointer"
+              className="modal-input-cyan modal-select"
               value={
                 selectedType === "offline"
                   ? offlineData.addType
@@ -491,7 +491,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="datetime-local"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-100 focus:bg-white hover:bg-white/80"
+            className="modal-input-pink"
             value={
               selectedType === "offline"
                 ? offlineData.startDate
@@ -511,7 +511,7 @@ const Modal: React.FC<ModalProps> = ({
           </label>
           <input
             type="datetime-local"
-            className="w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/70 backdrop-blur-sm transition-all duration-200 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-100 focus:bg-white hover:bg-white/80"
+            className="modal-input-pink"
             value={
               selectedType === "offline"
                 ? offlineData.expireDate
@@ -530,12 +530,21 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[999999] p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/60 flex justify-center items-center z-[999999] p-4 animate-in fade-in duration-200"
       onClick={onClose}
+      style={{
+        transform: "translateZ(0)",
+        willChange: "transform",
+        isolation: "isolate",
+      }}
     >
       <div
         className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in slide-in-from-bottom-4 fade-in duration-300 border border-slate-200"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          transform: "translateZ(0)",
+          willChange: "transform",
+        }}
       >
         <div className="sticky top-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-6 rounded-t-3xl flex justify-between items-center z-10 shadow-lg">
           <div className="flex items-center gap-4">
@@ -552,7 +561,7 @@ const Modal: React.FC<ModalProps> = ({
             </div>
           </div>
           <button
-            className="w-12 h-12 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-full transition-all duration-200 hover:bg-white/20 hover:scale-110 active:scale-95 flex items-center justify-center text-xl font-bold"
+            className="w-12 h-12 bg-white/10 border border-white/20 text-white rounded-full transition-all duration-200 hover:bg-white/20 hover:scale-110 active:scale-95 flex items-center justify-center text-xl font-bold"
             onClick={onClose}
           >
             ×
@@ -569,7 +578,7 @@ const Modal: React.FC<ModalProps> = ({
           {selectedType && renderTimeSection()}
         </div>
 
-        <div className="sticky bottom-0 flex justify-end gap-4 p-6 bg-white/90 backdrop-blur-sm border-t border-slate-200 rounded-b-3xl">
+        <div className="sticky bottom-0 flex justify-end gap-4 p-6 bg-white/90 border-t border-slate-200 rounded-b-3xl">
           <button
             className="px-6 py-3 border border-slate-300 bg-white rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-slate-50 hover:border-slate-400 active:scale-95 flex items-center gap-2 shadow-sm"
             onClick={onClose}

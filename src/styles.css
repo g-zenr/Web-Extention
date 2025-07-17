@@ -10,6 +10,38 @@
   .modal-overlay {
     animation: modalOverlayFadeIn 0.2s ease-out;
   }
+
+  .modal-input {
+    @apply w-full py-3 px-4 border border-slate-300 rounded-xl text-sm bg-white/90 transition-all duration-200 focus:outline-none focus:ring-4 focus:bg-white hover:bg-white placeholder:text-slate-400;
+  }
+
+  .modal-input-emerald {
+    @apply modal-input focus:border-emerald-500 focus:ring-emerald-100;
+  }
+
+  .modal-input-orange {
+    @apply modal-input focus:border-orange-500 focus:ring-orange-100;
+  }
+
+  .modal-input-red {
+    @apply modal-input focus:border-red-500 focus:ring-red-100;
+  }
+
+  .modal-input-indigo {
+    @apply modal-input focus:border-indigo-500 focus:ring-indigo-100;
+  }
+
+  .modal-input-cyan {
+    @apply modal-input focus:border-cyan-500 focus:ring-cyan-100;
+  }
+
+  .modal-input-pink {
+    @apply modal-input focus:border-pink-500 focus:ring-pink-100;
+  }
+
+  .modal-select {
+    @apply modal-input appearance-none cursor-pointer;
+  }
 }
 
 @keyframes modalSlideIn {

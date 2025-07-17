@@ -330,10 +330,26 @@ function showModal() {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     z-index: 999999;
+    pointer-events: auto;
+    transform: translateZ(0);
+    will-change: transform;
+    isolation: isolate;
   `;
+
+  // Prevent the modal from interfering with browser zoom
+  modalContainer.addEventListener(
+    "wheel",
+    (e) => {
+      // Only prevent default if the event is not a zoom gesture
+      if (!e.ctrlKey && !e.metaKey) {
+        e.stopPropagation();
+      }
+    },
+    { passive: true }
+  );
 
   document.body.appendChild(modalContainer);
 
@@ -366,6 +382,18 @@ function handleClick(event: Event) {
     return;
   }
 
+  // Don't interfere with browser UI elements
+  if (
+    target.closest('chrome-extension-ui, [role="toolbar"], [role="menubar"]')
+  ) {
+    return;
+  }
+
+  // Don't interfere with system dialogs or zoom controls
+  if (target.closest('[aria-label*="zoom"], [aria-label*="Zoom"]')) {
+    return;
+  }
+
   console.log(
     "🖱️ Click detected on:",
     target.tagName,
@@ -374,6 +402,7 @@ function handleClick(event: Event) {
 
   if (isEncodeKeyButton(target)) {
     console.log("🎯 Encode Key button clicked!");
+    event.stopPropagation(); // Only stop propagation for our target button
     showModal();
   }
 }
