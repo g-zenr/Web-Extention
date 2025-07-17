@@ -6,9 +6,37 @@ import {
 
 class TTLockApiService {
   private baseUrl: string;
+  private defaultClientId: string;
+  private defaultAccessToken: string;
+  private defaultLockId: string;
+  private defaultCardType: number;
+  private defaultAddType: number;
+  private defaultHeaders: Record<string, string>;
 
-  constructor(baseUrl: string = "https://api.ttlock.com") {
+  constructor(baseUrl: string = "http://localhost:3000") {
     this.baseUrl = baseUrl;
+    this.defaultClientId = "2a36101d46ec4a5c9971c9fc982bc07f";
+    this.defaultAccessToken = "cc2dd045936fadf231ac4b6ede131a57";
+    this.defaultLockId = "23939120";
+    this.defaultCardType = 1;
+    this.defaultAddType = 2;
+    this.defaultHeaders = {
+      Accept: "*/*",
+      "Accept-Language": "en-US,en;q=0.9",
+      Connection: "keep-alive",
+      "Content-Type": "application/json",
+      Origin: "http://localhost:5173",
+      Referer: "http://localhost:5173/",
+      "Sec-Fetch-Dest": "empty",
+      "Sec-Fetch-Mode": "cors",
+      "Sec-Fetch-Site": "same-site",
+      "User-Agent":
+        "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36",
+      "sec-ch-ua":
+        '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+      "sec-ch-ua-mobile": "?1",
+      "sec-ch-ua-platform": '"Android"',
+    };
   }
 
   /**
@@ -20,21 +48,14 @@ class TTLockApiService {
     try {
       console.log("🌐 Calling TTLock API for gateway encoding:", data);
 
-      // Convert dates to timestamps if they're date strings
-      const requestData = {
-        ...data,
-        startDate: this.convertToTimestamp(data.startDate),
-        endDate: this.convertToTimestamp(data.endDate),
-      };
-
-      const response = await fetch(`${this.baseUrl}/v3/key/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/api/ttlock/ic-card/public`,
+        {
+          method: "POST",
+          headers: this.defaultHeaders,
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -78,21 +99,46 @@ class TTLockApiService {
    * Map form data to API request format
    */
   mapFormDataToApiRequest(formData: GatewayData): GatewayEncodeRequest {
+    // Determine if it's permanent based on addType
+    const isPermanent = formData.addType.toLowerCase() === "permanent";
+
+    // Handle date logic based on permanent/temporary
+    let startDate: number;
+    let endDate: number;
+
+    if (isPermanent) {
+      // For permanent cards, use 0 for both dates
+      startDate = 0;
+      endDate = 0;
+      console.log("🔄 Permanent card detected - setting dates to 0");
+    } else {
+      // For temporary cards, convert to unix timestamp
+      startDate = this.convertToTimestamp(formData.startDate);
+      endDate = this.convertToTimestamp(formData.expireDate);
+      console.log(
+        "⏰ Temporary card detected - converting dates to timestamps",
+        {
+          startDate,
+          endDate,
+        }
+      );
+    }
+
     return {
-      clientId: formData.clientId,
-      accessToken: formData.accessToken,
-      lockId: formData.lockId,
+      clientId: this.defaultClientId, // Use pre-set value
+      accessToken: this.defaultAccessToken, // Use pre-set value
+      lockId: this.defaultLockId, // Use pre-set value
       cardNumber: formData.cardNumber,
       cardName: formData.cardName || formData.guestName, // Use cardName if provided, otherwise guestName
-      cardType: this.mapCardType(formData.cardType),
-      addType: this.mapAddType(formData.addType),
-      startDate: this.convertToTimestamp(formData.startDate),
-      endDate: this.convertToTimestamp(formData.expireDate),
+      cardType: this.defaultCardType, // Use pre-set value (1)
+      addType: this.defaultAddType, // Use pre-set value (2)
+      startDate: startDate,
+      endDate: endDate,
     };
   }
 
   /**
-   * Map card type string to number
+   * Map card type string to number (kept for backward compatibility)
    */
   private mapCardType(cardType: string): number {
     switch (cardType.toLowerCase()) {
@@ -108,7 +154,7 @@ class TTLockApiService {
   }
 
   /**
-   * Map add type string to number
+   * Map add type string to number (kept for backward compatibility)
    */
   private mapAddType(addType: string): number {
     switch (addType.toLowerCase()) {
@@ -119,6 +165,26 @@ class TTLockApiService {
       default:
         return 2; // Default to temporary
     }
+  }
+
+  /**
+   * Get the pre-set default values (for display purposes)
+   */
+  getDefaultValues() {
+    return {
+      clientId: this.defaultClientId,
+      accessToken: this.defaultAccessToken,
+      lockId: this.defaultLockId,
+      cardType: this.defaultCardType,
+      addType: this.defaultAddType,
+    };
+  }
+
+  /**
+   * Get the default headers (for debugging purposes)
+   */
+  getDefaultHeaders() {
+    return { ...this.defaultHeaders };
   }
 }
 

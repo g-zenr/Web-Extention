@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ModalProps,
   OfflineData,
   GatewayData,
   TTLockData,
 } from "../types/ttlock";
+import { ttlockApiService } from "../services/ttlockApi";
 
 const Modal: React.FC<ModalProps> = ({
   guestName,
@@ -42,6 +43,24 @@ const Modal: React.FC<ModalProps> = ({
     expireDate: "",
   });
 
+  // Pre-populate the default values when component mounts
+  useEffect(() => {
+    const defaultValues = ttlockApiService.getDefaultValues();
+    setGatewayData((prev) => ({
+      ...prev,
+      clientId: defaultValues.clientId,
+      accessToken: defaultValues.accessToken,
+      lockId: defaultValues.lockId,
+      cardType: "keycard", // Default to keycard (maps to 1)
+      addType: "temporary", // Default to temporary (maps to 2)
+    }));
+    setOfflineData((prev) => ({
+      ...prev,
+      cardType: "keycard", // Default to keycard (maps to 1)
+      addType: "temporary", // Default to temporary (maps to 2)
+    }));
+  }, []);
+
   const handleOfflineInputChange = (
     field: keyof Omit<OfflineData, "type">,
     value: string
@@ -78,31 +97,26 @@ const Modal: React.FC<ModalProps> = ({
         !offlineData.cardName ||
         !offlineData.cardType ||
         !offlineData.addType ||
-        !offlineData.startDate ||
-        !offlineData.expireDate
+        (!offlineData.startDate && offlineData.addType !== "permanent") ||
+        (!offlineData.expireDate && offlineData.addType !== "permanent")
       ) {
-        alert("Please fill in all offline fields");
+        alert("Please fill in all required offline fields");
         return;
       }
       onEncode({ type: "offline", ...offlineData });
     } else {
-      // Validate gateway fields
+      // Validate gateway fields (excluding pre-set values)
       if (
         !gatewayData.guestName ||
         !gatewayData.roomNumber ||
         !gatewayData.buildingNumber ||
         !gatewayData.floorNumber ||
-        !gatewayData.clientId ||
-        !gatewayData.accessToken ||
-        !gatewayData.lockId ||
         !gatewayData.cardNumber ||
         !gatewayData.cardName ||
-        !gatewayData.cardType ||
-        !gatewayData.addType ||
-        !gatewayData.startDate ||
-        !gatewayData.expireDate
+        (!gatewayData.startDate && gatewayData.addType !== "permanent") ||
+        (!gatewayData.expireDate && gatewayData.addType !== "permanent")
       ) {
-        alert("Please fill in all gateway fields");
+        alert("Please fill in all required gateway fields");
         return;
       }
       onEncode({ type: "gateway", ...gatewayData });
@@ -291,45 +305,41 @@ const Modal: React.FC<ModalProps> = ({
           <div className="space-y-2">
             <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
               <span className="text-indigo-600">🆔</span>
-              Client ID
+              Client ID (Pre-configured)
             </label>
             <input
               type="text"
               className="modal-input-indigo"
               value={gatewayData.clientId}
-              onChange={(e) =>
-                handleGatewayInputChange("clientId", e.target.value)
-              }
-              placeholder="Enter client ID"
+              readOnly
+              style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
             />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
               <span className="text-indigo-600">🔑</span>
-              Access Token
+              Access Token (Pre-configured)
             </label>
             <input
               type="text"
               className="modal-input-indigo"
               value={gatewayData.accessToken}
-              onChange={(e) =>
-                handleGatewayInputChange("accessToken", e.target.value)
-              }
-              placeholder="Enter access token"
+              readOnly
+              style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
             />
           </div>
         </div>
         <div className="space-y-2">
           <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
             <span className="text-indigo-600">🔐</span>
-            Lock ID
+            Lock ID (Pre-configured)
           </label>
           <input
             type="text"
             className="modal-input-indigo"
             value={gatewayData.lockId}
-            onChange={(e) => handleGatewayInputChange("lockId", e.target.value)}
-            placeholder="Enter lock ID"
+            readOnly
+            style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
           />
         </div>
       </div>
@@ -393,31 +403,20 @@ const Modal: React.FC<ModalProps> = ({
           <div className="space-y-2">
             <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
               <span className="text-cyan-600">📱</span>
-              Card Type
+              Card Type (Pre-configured: Keycard)
             </label>
-            <select
-              className="modal-input-cyan modal-select"
-              value={
-                selectedType === "offline"
-                  ? offlineData.cardType
-                  : gatewayData.cardType
-              }
-              onChange={(e) =>
-                selectedType === "offline"
-                  ? handleOfflineInputChange("cardType", e.target.value)
-                  : handleGatewayInputChange("cardType", e.target.value)
-              }
-            >
-              <option value="">Select card type</option>
-              <option value="keycard">🔑 Keycard</option>
-              <option value="master">👑 Master</option>
-              <option value="guest">🎫 Guest</option>
-            </select>
+            <input
+              type="text"
+              className="modal-input-cyan"
+              value="🔑 Keycard"
+              readOnly
+              style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
+            />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
               <span className="text-cyan-600">➕</span>
-              Add Type
+              Add Type (Default: Temporary)
             </label>
             <select
               className="modal-input-cyan modal-select"
@@ -432,9 +431,8 @@ const Modal: React.FC<ModalProps> = ({
                   : handleGatewayInputChange("addType", e.target.value)
               }
             >
-              <option value="">Select add type</option>
-              <option value="permanent">∞ Permanent</option>
               <option value="temporary">⏱️ Temporary</option>
+              <option value="permanent">∞ Permanent</option>
             </select>
           </div>
         </div>
@@ -442,58 +440,81 @@ const Modal: React.FC<ModalProps> = ({
     </div>
   );
 
-  const renderTimeSection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border border-pink-200 shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          ⏰
+  const renderTimeSection = () => {
+    const currentAddType =
+      selectedType === "offline" ? offlineData.addType : gatewayData.addType;
+    const isPermanent = currentAddType === "permanent";
+
+    return (
+      <div className="mb-8 p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border border-pink-200 shadow-sm">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
+            ⏰
+          </div>
+          <h3 className="text-lg font-bold text-slate-800">
+            Time Configuration
+          </h3>
         </div>
-        <h3 className="text-lg font-bold text-slate-800">Time Configuration</h3>
+
+        {isPermanent ? (
+          <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="text-4xl mb-2">∞</div>
+            <h4 className="text-lg font-semibold text-blue-800 mb-2">
+              Permanent Access
+            </h4>
+            <p className="text-blue-600 text-sm">
+              This card will have permanent access with no expiration date.
+              <br />
+              Start and end dates will be set to 0 automatically.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
+                <span className="text-pink-600">🚀</span>
+                Start Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                className="modal-input-pink"
+                value={
+                  selectedType === "offline"
+                    ? offlineData.startDate
+                    : gatewayData.startDate
+                }
+                onChange={(e) =>
+                  selectedType === "offline"
+                    ? handleOfflineInputChange("startDate", e.target.value)
+                    : handleGatewayInputChange("startDate", e.target.value)
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
+                <span className="text-pink-600">⏳</span>
+                Expire Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                className="modal-input-pink"
+                value={
+                  selectedType === "offline"
+                    ? offlineData.expireDate
+                    : gatewayData.expireDate
+                }
+                onChange={(e) =>
+                  selectedType === "offline"
+                    ? handleOfflineInputChange("expireDate", e.target.value)
+                    : handleGatewayInputChange("expireDate", e.target.value)
+                }
+              />
+            </div>
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-pink-600">🚀</span>
-            Start Date & Time
-          </label>
-          <input
-            type="datetime-local"
-            className="modal-input-pink"
-            value={
-              selectedType === "offline"
-                ? offlineData.startDate
-                : gatewayData.startDate
-            }
-            onChange={(e) =>
-              selectedType === "offline"
-                ? handleOfflineInputChange("startDate", e.target.value)
-                : handleGatewayInputChange("startDate", e.target.value)
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-pink-600">⏳</span>
-            Expire Date & Time
-          </label>
-          <input
-            type="datetime-local"
-            className="modal-input-pink"
-            value={
-              selectedType === "offline"
-                ? offlineData.expireDate
-                : gatewayData.expireDate
-            }
-            onChange={(e) =>
-              selectedType === "offline"
-                ? handleOfflineInputChange("expireDate", e.target.value)
-                : handleGatewayInputChange("expireDate", e.target.value)
-            }
-          />
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div
