@@ -28,9 +28,15 @@ export const useTTLockEncode = () => {
 export const useTTLockOfflineEncode = () => {
   return useMutation<void, Error, any>({
     mutationFn: async (data: any) => {
-      // For offline mode, we don't make an API call
-      // This is just for consistency with the UI
+      // For offline mode, send initialization request
       console.log("🔑 Processing offline encoding:", data);
+
+      const result = await ttlockApiService.sendInitializationRequest();
+
+      if (!result.success) {
+        throw new Error(result.message || "Initialization request failed");
+      }
+
       return Promise.resolve();
     },
     onSuccess: () => {

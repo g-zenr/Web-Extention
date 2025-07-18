@@ -205,7 +205,15 @@ const ModalWithHooks: React.FC<{
       try {
         await offlineEncode.mutateAsync(data);
 
-        alert(`Encoding TTLock (Offline) with data:
+        alert(`✅ Initialization request sent successfully to localhost:8080/initialize!
+
+The following parameters were sent:
+- Client ID: 4b8bc0348ff54d3186a1fd2128ed7274
+- Client Secret: 28f2d59934a748da1d518eb76833440d
+- Serial Port: COM5
+- Sectors: 0000000000011111
+
+Offline encoding data:
 Building: ${data.buildingNumber}
 Floor: ${data.floorNumber}
 Lock MAC: ${data.lockMac}

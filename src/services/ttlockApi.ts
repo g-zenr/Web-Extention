@@ -13,7 +13,9 @@ class TTLockApiService {
   private defaultAddType: number;
   private defaultHeaders: Record<string, string>;
 
-  constructor(baseUrl: string = "http://localhost:3000") {
+  constructor(
+    baseUrl: string = "https://onebis-api-pro-max-1e8a714fa0b6.herokuapp.com"
+  ) {
     this.baseUrl = baseUrl;
     this.defaultClientId = "2a36101d46ec4a5c9971c9fc982bc07f";
     this.defaultAccessToken = "cc2dd045936fadf231ac4b6ede131a57";
@@ -168,7 +170,55 @@ class TTLockApiService {
   }
 
   /**
-   * Get the pre-set default values (for display purposes)
+   * Send initialization request for offline mode
+   */
+  async sendInitializationRequest(): Promise<{
+    success: boolean;
+    message?: string;
+    data?: any;
+  }> {
+    try {
+      console.log(
+        "🔌 Sending initialization request to localhost:8080/initialize"
+      );
+
+      const response = await fetch("http://localhost:8080/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientId: "4b8bc0348ff54d3186a1fd2128ed7274",
+          clientSecret: "28f2d59934a748da1d518eb76833440d",
+          serialPort: "COM5",
+          sectors: "0000000000011111",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Initialization request successful:", result);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error("❌ Initialization request failed:", error);
+
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      };
+    }
+  }
+
+  /**
+   * Get default values for the form
    */
   getDefaultValues() {
     return {
