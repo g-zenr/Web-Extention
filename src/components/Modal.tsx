@@ -19,6 +19,13 @@ const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
 
 const sectionTitle = "font-semibold text-lg mb-2 mt-4 flex items-center gap-2";
 
+// Add type for cyclic periods (move outside Modal component)
+interface CyclicPeriod {
+  weekDay: string;
+  startTime: string;
+  endTime: string;
+}
+
 const Modal: React.FC<ModalProps> = ({
   guestName,
   roomNumber,
@@ -45,6 +52,44 @@ const Modal: React.FC<ModalProps> = ({
   const [gatewayCardType, setGatewayCardType] = useState("Normal Card");
   const [gatewayAccessType, setGatewayAccessType] =
     useState("Permanent Access");
+
+  // Add state for cyclic time periods
+  const [cyclicPeriods, setCyclicPeriods] = useState<CyclicPeriod[]>([]);
+
+  // Add state for gateway start/end date
+  const [gatewayCardStartDate, setGatewayCardStartDate] = useState("");
+  const [gatewayCardEndDate, setGatewayCardEndDate] = useState("");
+
+  const weekDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  function addCyclicPeriod(): void {
+    setCyclicPeriods((periods) => [
+      ...periods,
+      { weekDay: "Monday", startTime: "08:00", endTime: "18:00" },
+    ]);
+  }
+
+  function removeCyclicPeriod(idx: number): void {
+    setCyclicPeriods((periods) => periods.filter((_, i) => i !== idx));
+  }
+
+  function updateCyclicPeriod(
+    idx: number,
+    field: keyof CyclicPeriod,
+    value: string
+  ): void {
+    setCyclicPeriods((periods) =>
+      periods.map((p, i) => (i === idx ? { ...p, [field]: value } : p))
+    );
+  }
 
   useEffect(() => {
     const defaultValues = ttlockApiService.getDefaultValues();
@@ -132,388 +177,104 @@ const Modal: React.FC<ModalProps> = ({
             Gateway
           </div>
         </div>
-        {/* Tab Content */}
-        {selectedType === "offline" && (
-          <div className="pb-6">
-            {/* Building & Floor */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect
-                      x="3"
-                      y="7"
-                      width="18"
-                      height="10"
-                      rx="2"
+        {/* Scrollable body */}
+        <div className="max-h-[80vh] overflow-y-auto pb-6">
+          {selectedType === "offline" && (
+            <div className="pb-6">
+              {/* Building & Floor */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="3"
+                        y="7"
+                        width="18"
+                        height="10"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <rect
+                        x="7"
+                        y="10"
+                        width="2"
+                        height="2"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="15"
+                        y="10"
+                        width="2"
+                        height="2"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    Building
+                  </label>
+                  <input
+                    className={inputClasses}
+                    value={offlineData.buildingNumber}
+                    onChange={(e) =>
+                      handleOfflineInputChange("buildingNumber", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                    <svg
+                      className="w-4 h-4"
                       fill="none"
-                    />
-                    <rect
-                      x="7"
-                      y="10"
-                      width="2"
-                      height="2"
-                      rx="1"
-                      fill="currentColor"
-                    />
-                    <rect
-                      x="15"
-                      y="10"
-                      width="2"
-                      height="2"
-                      rx="1"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Building
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2v20M2 12h20"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    Floor
+                  </label>
+                  <input
+                    className={inputClasses}
+                    value={offlineData.floorNumber}
+                    onChange={(e) =>
+                      handleOfflineInputChange("floorNumber", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+              {/* Device MAC Address */}
+              <div className="mb-4">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <span className="text-lg font-bold">+</span> Device MAC
+                  Address
                 </label>
                 <input
                   className={inputClasses}
-                  value={offlineData.buildingNumber}
+                  value={offlineData.lockMac}
                   onChange={(e) =>
-                    handleOfflineInputChange("buildingNumber", e.target.value)
+                    handleOfflineInputChange("lockMac", e.target.value)
                   }
+                  placeholder="Enter the MAC address of the target device"
                 />
+                <div className="text-xs text-gray-400 mt-1">
+                  Enter the MAC address of the target device
+                </div>
               </div>
-              <div>
-                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2v20M2 12h20"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  Floor
-                </label>
-                <input
-                  className={inputClasses}
-                  value={offlineData.floorNumber}
-                  onChange={(e) =>
-                    handleOfflineInputChange("floorNumber", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-            {/* Device MAC Address */}
-            <div className="mb-4">
-              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                <span className="text-lg font-bold">+</span> Device MAC Address
-              </label>
-              <input
-                className={inputClasses}
-                value={offlineData.lockMac}
-                onChange={(e) =>
-                  handleOfflineInputChange("lockMac", e.target.value)
-                }
-                placeholder="Enter the MAC address of the target device"
-              />
-              <div className="text-xs text-gray-400 mt-1">
-                Enter the MAC address of the target device
-              </div>
-            </div>
-            {/* Expiration */}
-            <div className="mb-4">
-              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" />
-                </svg>
-                Expiration (days)
-              </label>
-              <input
-                className={inputClasses}
-                value={offlineData.expireDate}
-                onChange={(e) =>
-                  handleOfflineInputChange("expireDate", e.target.value)
-                }
-              />
-              <div className="text-xs text-gray-400 mt-1">
-                Number of days until card expires
-              </div>
-            </div>
-            {/* Divider */}
-            <hr className="my-6" />
-            {/* Security Options */}
-            <div className="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
-              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-2 text-base">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <path d="M12 16v-4" stroke="currentColor" strokeWidth="2" />
-                  <circle cx="12" cy="8" r="1" fill="currentColor" />
-                </svg>
-                Security Options
-              </label>
-              <label className="flex items-center space-x-2 font-medium">
-                <input
-                  type="checkbox"
-                  checked={reverseLock}
-                  onChange={(e) => setReverseLock(e.target.checked)}
-                  className="form-checkbox"
-                />
-                <span>Allow Reverse Lock</span>
-              </label>
-              <div className="text-xs text-gray-400 mt-1">
-                Enable reverse lock functionality for enhanced security
-              </div>
-            </div>
-            {/* Buttons */}
-            <div className="flex justify-center space-x-4 mt-6">
-              <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <rect
-                    x="3"
-                    y="6"
-                    width="18"
-                    height="14"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <path
-                    d="M8 6V4a4 4 0 1 1 8 0v2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
-                Clear Card
-              </button>
-              <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <circle cx="12" cy="12" r="3" fill="currentColor" />
-                </svg>
-                Read Card
-              </button>
-              <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <rect
-                    x="4"
-                    y="4"
-                    width="16"
-                    height="16"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
-                  <path d="M12 8v8" stroke="currentColor" strokeWidth="2" />
-                </svg>
-                Write Card
-              </button>
-            </div>
-          </div>
-        )}
-        {selectedType === "gateway" && (
-          <div className="pb-6">
-            <div className="p-0">
-              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-4 text-lg">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <rect
-                    x="3"
-                    y="7"
-                    width="18"
-                    height="10"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    fill="none"
-                  />
-                  <rect
-                    x="7"
-                    y="10"
-                    width="2"
-                    height="2"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="15"
-                    y="10"
-                    width="2"
-                    height="2"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                </svg>
-                Create New Card
-              </label>
+              {/* Expiration */}
               <div className="mb-4">
-                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect
-                      x="3"
-                      y="7"
-                      width="18"
-                      height="10"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <rect
-                      x="7"
-                      y="10"
-                      width="2"
-                      height="2"
-                      rx="1"
-                      fill="currentColor"
-                    />
-                    <rect
-                      x="15"
-                      y="10"
-                      width="2"
-                      height="2"
-                      rx="1"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Card Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                  className={inputClasses}
-                  placeholder="Enter card number"
-                  value={gatewayCardNumber}
-                  onChange={(e) => setGatewayCardNumber(e.target.value)}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2v20M2 12h20"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  Card Name (Optional)
-                </label>
-                <input
-                  className={inputClasses}
-                  placeholder="Enter a name for this card"
-                  value={gatewayCardName}
-                  onChange={(e) => setGatewayCardName(e.target.value)}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect
-                      x="4"
-                      y="4"
-                      width="16"
-                      height="16"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                  Card Type
-                </label>
-                <select
-                  className={inputClasses}
-                  value={gatewayCardType}
-                  onChange={(e) => setGatewayCardType(e.target.value)}
-                >
-                  <option>Normal Card</option>
-                  <option>VIP Card</option>
-                  <option>Guest Card</option>
-                </select>
-              </div>
-              <div className="mb-8">
                 <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
                   <svg
                     className="w-4 h-4"
@@ -530,24 +291,167 @@ const Modal: React.FC<ModalProps> = ({
                       strokeWidth="2"
                       fill="none"
                     />
-                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    <path
+                      d="M12 6v6l4 2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
                   </svg>
-                  Access Type
+                  Expiration (days)
                 </label>
-                <select
+                <input
                   className={inputClasses}
-                  value={gatewayAccessType}
-                  onChange={(e) => setGatewayAccessType(e.target.value)}
-                >
-                  <option>Permanent Access</option>
-                  <option>Temporary Access</option>
-                </select>
+                  value={offlineData.expireDate}
+                  onChange={(e) =>
+                    handleOfflineInputChange("expireDate", e.target.value)
+                  }
+                />
+                <div className="text-xs text-gray-400 mt-1">
+                  Number of days until card expires
+                </div>
               </div>
+              {/* Divider */}
+              <hr className="my-6" />
+              {/* Security Options */}
+              <div className="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-2 text-base">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <path d="M12 16v-4" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="12" cy="8" r="1" fill="currentColor" />
+                  </svg>
+                  Security Options
+                </label>
+                <label className="flex items-center space-x-2 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={reverseLock}
+                    onChange={(e) => setReverseLock(e.target.checked)}
+                    className="form-checkbox"
+                  />
+                  <span>Allow Reverse Lock</span>
+                </label>
+                <div className="text-xs text-gray-400 mt-1">
+                  Enable reverse lock functionality for enhanced security
+                </div>
+              </div>
+              {/* Encoder tab (inside the JSX after Card Type select) */}
+              {offlineData.cardType === "Cyclic Card" && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-semibold text-gray-800 text-sm">
+                      Cyclic Configuration *
+                    </label>
+                    <button
+                      type="button"
+                      className="border border-gray-300 rounded px-4 py-1 bg-white hover:bg-gray-50 text-sm font-medium flex items-center gap-1"
+                      onClick={addCyclicPeriod}
+                    >
+                      + Add Time Period
+                    </button>
+                  </div>
+                  {cyclicPeriods.length === 0 && (
+                    <div className="text-xs text-gray-400">
+                      Add at least one time period for cyclic access
+                    </div>
+                  )}
+                  {cyclicPeriods.map((period, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white border border-gray-200 rounded-lg p-3 mt-3 flex flex-col gap-2 shadow-sm max-w-[500px] w-auto"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="font-medium text-gray-800 text-sm mr-2">
+                          Time Period {idx + 1}
+                        </div>
+                        <button
+                          type="button"
+                          className="text-red-500 hover:text-red-700 p-1"
+                          onClick={() => removeCyclicPeriod(idx)}
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M6 18L18 6M6 6l12 12"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="flex flex-row items-end gap-x-2">
+                        <div className="flex flex-col flex-1">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Week Day
+                          </label>
+                          <select
+                            className="text-sm py-1 px-2 border border-gray-300 rounded w-full"
+                            value={period.weekDay}
+                            onChange={(e) =>
+                              updateCyclicPeriod(idx, "weekDay", e.target.value)
+                            }
+                          >
+                            {weekDays.map((day) => (
+                              <option key={day}>{day}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="flex flex-col flex-1">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Start Time
+                          </label>
+                          <input
+                            type="time"
+                            className="text-sm py-1 px-2 border border-gray-300 rounded w-full"
+                            value={period.startTime}
+                            onChange={(e) =>
+                              updateCyclicPeriod(
+                                idx,
+                                "startTime",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="flex flex-col flex-1">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            End Time
+                          </label>
+                          <input
+                            type="time"
+                            className="text-sm py-1 px-2 border border-gray-300 rounded w-full"
+                            value={period.endTime}
+                            onChange={(e) =>
+                              updateCyclicPeriod(idx, "endTime", e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Buttons */}
               <div className="flex justify-center space-x-4 mt-6">
-                <button
-                  className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
-                  onClick={onClose}
-                >
+                <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -571,7 +475,27 @@ const Modal: React.FC<ModalProps> = ({
                       strokeWidth="2"
                     />
                   </svg>
-                  Cancel
+                  Clear Card
+                </button>
+                <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                  </svg>
+                  Read Card
                 </button>
                 <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
                   <svg
@@ -594,12 +518,378 @@ const Modal: React.FC<ModalProps> = ({
                     <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
                     <path d="M12 8v8" stroke="currentColor" strokeWidth="2" />
                   </svg>
-                  + Create IC Card
+                  Write Card
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+          {selectedType === "gateway" && (
+            <div className="pb-6">
+              <div className="p-0">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-4 text-lg">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="3"
+                      y="7"
+                      width="18"
+                      height="10"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <rect
+                      x="7"
+                      y="10"
+                      width="2"
+                      height="2"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                    <rect
+                      x="15"
+                      y="10"
+                      width="2"
+                      height="2"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Create New Card
+                </label>
+                <div className="mb-4">
+                  <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="3"
+                        y="7"
+                        width="18"
+                        height="10"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <rect
+                        x="7"
+                        y="10"
+                        width="2"
+                        height="2"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="15"
+                        y="10"
+                        width="2"
+                        height="2"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    Card Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    className={inputClasses}
+                    placeholder="Enter card number"
+                    value={gatewayCardNumber}
+                    onChange={(e) => setGatewayCardNumber(e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2v20M2 12h20"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    Card Name (Optional)
+                  </label>
+                  <input
+                    className={inputClasses}
+                    placeholder="Enter a name for this card"
+                    value={gatewayCardName}
+                    onChange={(e) => setGatewayCardName(e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="4"
+                        y="4"
+                        width="16"
+                        height="16"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                    Card Type
+                  </label>
+                  <select
+                    className={inputClasses}
+                    value={gatewayCardType}
+                    onChange={(e) => setGatewayCardType(e.target.value)}
+                  >
+                    <option>Normal Card</option>
+                    <option>Cyclic Card</option>
+                  </select>
+                </div>
+                {gatewayCardType === "Cyclic Card" && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="font-semibold text-gray-800 text-sm">
+                        Cyclic Configuration *
+                      </label>
+                      <button
+                        type="button"
+                        className="border border-gray-300 rounded px-4 py-1 bg-white hover:bg-gray-50 text-sm font-medium flex items-center gap-1"
+                        onClick={addCyclicPeriod}
+                      >
+                        + Add Time Period
+                      </button>
+                    </div>
+                    {cyclicPeriods.length === 0 && (
+                      <div className="text-xs text-gray-400">
+                        Add at least one time period for cyclic access
+                      </div>
+                    )}
+                    {cyclicPeriods.map((period, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white border border-gray-200 rounded-xl p-4 mt-3"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-semibold text-gray-800">
+                            Time Period {idx + 1}
+                          </div>
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => removeCyclicPeriod(idx)}
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M6 18L18 6M6 6l12 12"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 items-end">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Week Day
+                            </label>
+                            <select
+                              className={inputClasses}
+                              value={period.weekDay}
+                              onChange={(e) =>
+                                updateCyclicPeriod(
+                                  idx,
+                                  "weekDay",
+                                  e.target.value
+                                )
+                              }
+                            >
+                              {weekDays.map((day) => (
+                                <option key={day}>{day}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Start Time
+                            </label>
+                            <input
+                              type="time"
+                              className={inputClasses}
+                              value={period.startTime}
+                              onChange={(e) =>
+                                updateCyclicPeriod(
+                                  idx,
+                                  "startTime",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              End Time
+                            </label>
+                            <input
+                              type="time"
+                              className={inputClasses}
+                              value={period.endTime}
+                              onChange={(e) =>
+                                updateCyclicPeriod(
+                                  idx,
+                                  "endTime",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="mb-8">
+                  <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    </svg>
+                    Access Type
+                  </label>
+                  <select
+                    className={inputClasses}
+                    value={gatewayAccessType}
+                    onChange={(e) => setGatewayAccessType(e.target.value)}
+                  >
+                    <option>Permanent Access</option>
+                    <option>Temporary Access</option>
+                  </select>
+                </div>
+                {gatewayAccessType === "Temporary Access" && (
+                  <>
+                    <div className="mb-2 mt-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Start Date *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="text-sm py-1 px-2 border border-gray-300 rounded w-full"
+                        value={gatewayCardStartDate}
+                        onChange={(e) =>
+                          setGatewayCardStartDate(e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        End Date *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="text-sm py-1 px-2 border border-gray-300 rounded w-full"
+                        value={gatewayCardEndDate}
+                        onChange={(e) => setGatewayCardEndDate(e.target.value)}
+                      />
+                      <div className="text-xs text-gray-400">
+                        End date must be after the start date
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-center space-x-4 mt-6">
+                  <button
+                    className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
+                    onClick={onClose}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="3"
+                        y="6"
+                        width="18"
+                        height="14"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <path
+                        d="M8 6V4a4 4 0 1 1 8 0v2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                    Cancel
+                  </button>
+                  <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="4"
+                        y="4"
+                        width="16"
+                        height="16"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        fill="none"
+                      />
+                      <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                    + Create IC Card
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
