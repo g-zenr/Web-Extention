@@ -115,6 +115,14 @@ const Modal: React.FC<ModalProps> = ({
   const handleReadCard = () => alert("Read Card clicked");
   const handleWriteCard = () => alert("Write Card clicked");
 
+  // Update button classes for system theme
+  // Primary button (e.g., Create IC Card, Write Card):
+  const primaryButton =
+    "py-3 px-4 text-base rounded bg-blue-600 text-white hover:bg-blue-700 border border-blue-600 font-medium flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400";
+  // Secondary button (e.g., Cancel, Clear Card, Read Card):
+  const secondaryButton =
+    "py-3 px-4 text-base rounded bg-white text-gray-900 border border-gray-300 hover:bg-gray-100 font-medium flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-200";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
@@ -451,7 +459,7 @@ const Modal: React.FC<ModalProps> = ({
               )}
               {/* Buttons */}
               <div className="flex justify-center space-x-4 mt-6">
-                <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                <button className={secondaryButton}>
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -477,7 +485,7 @@ const Modal: React.FC<ModalProps> = ({
                   </svg>
                   Clear Card
                 </button>
-                <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                <button className={secondaryButton}>
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -497,7 +505,7 @@ const Modal: React.FC<ModalProps> = ({
                   </svg>
                   Read Card
                 </button>
-                <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                <button className={primaryButton}>
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -526,43 +534,6 @@ const Modal: React.FC<ModalProps> = ({
           {selectedType === "gateway" && (
             <div className="pb-6">
               <div className="p-0">
-                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-4 text-lg">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect
-                      x="3"
-                      y="7"
-                      width="18"
-                      height="10"
-                      rx="2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <rect
-                      x="7"
-                      y="10"
-                      width="2"
-                      height="2"
-                      rx="1"
-                      fill="currentColor"
-                    />
-                    <rect
-                      x="15"
-                      y="10"
-                      width="2"
-                      height="2"
-                      rx="1"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  Create New Card
-                </label>
                 <div className="mb-4">
                   <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
                     <svg
@@ -834,10 +805,7 @@ const Modal: React.FC<ModalProps> = ({
                   </>
                 )}
                 <div className="flex justify-center space-x-4 mt-6">
-                  <button
-                    className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
-                    onClick={onClose}
-                  >
+                  <button className={secondaryButton} onClick={onClose}>
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -863,7 +831,7 @@ const Modal: React.FC<ModalProps> = ({
                     </svg>
                     Cancel
                   </button>
-                  <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                  <button className={primaryButton}>
                     <svg
                       className="w-5 h-5"
                       fill="none"
