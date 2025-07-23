@@ -6,6 +6,7 @@ import {
   TTLockData,
 } from "../types/ttlock";
 import { ttlockApiService } from "../services/ttlockApi";
+import { useApiPost } from "../hooks/useApi";
 
 const tabClasses = (active: boolean) =>
   `flex-1 py-2 px-4 text-center cursor-pointer rounded-t-lg font-medium transition-colors duration-150 ${
@@ -114,6 +115,72 @@ const Modal: React.FC<ModalProps> = ({
   const handleClearCard = () => alert("Clear Card clicked");
   const handleReadCard = () => alert("Read Card clicked");
   const handleWriteCard = () => alert("Write Card clicked");
+
+  const createICCard = useApiPost("/api/ttlock/ic-card/public");
+
+  // Gateway tab: handler for Create IC Card
+  const handleCreateICCard = () => {
+    // Helper: convert weekday string to int (1=Monday, 7=Sunday)
+    const weekDayToInt = (day: string) => {
+      const map: Record<string, number> = {
+        Monday: 1,
+        Tuesday: 2,
+        Wednesday: 3,
+        Thursday: 4,
+        Friday: 5,
+        Saturday: 6,
+        Sunday: 7,
+      };
+      return map[day] || 1;
+    };
+    // Helper: convert HH:mm to minutes since midnight
+    const timeToMinutes = (time: string) => {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    };
+    // Convert start/end date to timestamp (ms), or 0 for permanent
+    let startDate = 0;
+    let endDate = 0;
+    if (gatewayAccessType === "Temporary Access") {
+      startDate = gatewayCardStartDate
+        ? new Date(gatewayCardStartDate).getTime()
+        : 0;
+      endDate = gatewayCardEndDate ? new Date(gatewayCardEndDate).getTime() : 0;
+    }
+    // Card type: 1 = Normal, 4 = Cyclic
+    const cardTypeInt = gatewayCardType === "Cyclic Card" ? 4 : 1;
+    // cyclicConfig: only for cyclic card
+    let cyclicConfig = undefined;
+    if (cardTypeInt === 4) {
+      cyclicConfig = cyclicPeriods.map((period) => ({
+        weekDay: weekDayToInt(period.weekDay),
+        startTime: timeToMinutes(period.startTime),
+        endTime: timeToMinutes(period.endTime),
+      }));
+    }
+    const payload: any = {
+      cardNumber: gatewayCardNumber,
+      cardName: gatewayCardName,
+      cardType: cardTypeInt,
+      accessType: gatewayAccessType,
+      startDate,
+      endDate,
+      clientId: "4b8bc0348ff54d3186a1fd2128ed7274",
+      accessToken: "a8542f6d690263c9ca91b4c5f2c9fb27",
+      lockId: "19951278",
+      addType: 2,
+    };
+    if (cyclicConfig) payload.cyclicConfig = cyclicConfig;
+    createICCard.mutate(payload, {
+      onSuccess: (data) => {
+        alert("IC Card created successfully!");
+        onClose();
+      },
+      onError: (error) => {
+        alert("Error: " + error.message);
+      },
+    });
+  };
 
   // Update button classes for system theme
   // Primary button (e.g., Create IC Card, Write Card):
@@ -831,7 +898,11 @@ const Modal: React.FC<ModalProps> = ({
                     </svg>
                     Cancel
                   </button>
-                  <button className={primaryButton}>
+                  <button
+                    className={primaryButton}
+                    onClick={handleCreateICCard}
+                    disabled={createICCard.isPending}
+                  >
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -853,6 +924,16 @@ const Modal: React.FC<ModalProps> = ({
                     </svg>
                     + Create IC Card
                   </button>
+                  {createICCard.isPending && (
+                    <div className="text-blue-600 text-sm mt-2">
+                      Creating...
+                    </div>
+                  )}
+                  {createICCard.isError && (
+                    <div className="text-red-600 text-sm mt-2">
+                      {createICCard.error.message}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
