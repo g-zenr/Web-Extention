@@ -353,7 +353,7 @@ function initializeExtension() {
   console.log("🚀 TTLock Extension initializing...");
 
   // Check if we're on the right page
-  if (!window.location.href.includes("localhost:5173")) {
+  if (!window.location.href.includes("https://onebis-app-pro-max.web.app/")) {
     console.log("❌ Not on target page, skipping initialization");
     return;
   }

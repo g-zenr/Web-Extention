@@ -26,10 +26,10 @@ export function isEncodeKeyButton(element: Element): boolean {
 
   console.log("🔍 Checking button:", button.textContent?.trim());
 
-  // Check if button contains "Encode Key" text
+  // Check if button contains "Encode Key" or "Add IC Card" text
   const buttonText = button.textContent?.trim().toLowerCase() || "";
-  if (buttonText.includes("encode key")) {
-    console.log("✅ Found Encode Key button by text!");
+  if (buttonText.includes("encode key") || buttonText.includes("add ic card")) {
+    console.log("✅ Found Encode Key or Add IC Card button by text!");
     return true;
   }
 

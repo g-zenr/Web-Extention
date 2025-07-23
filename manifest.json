@@ -6,7 +6,10 @@
   "permissions": ["activeTab"],
   "content_scripts": [
     {
-      "matches": ["http://localhost:5173/*"],
+      "matches": [
+        "http://localhost:5173/*",
+        "https://onebis-app-pro-max.web.app/*"
+      ],
       "js": ["dist/content.js"]
     }
   ]
