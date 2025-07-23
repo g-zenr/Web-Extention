@@ -6,6 +6,8 @@ import { useTTLockEncode, useTTLockOfflineEncode } from "./hooks/useTTLockApi";
 import { TTLockData, GuestInfo } from "./types/ttlock";
 import { isEncodeKeyButton } from "./utils/buttonUtils";
 import "./styles.css";
+import { toast } from "sonner";
+import { Toaster } from "sonner";
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -204,28 +206,12 @@ const ModalWithHooks: React.FC<{
     if (data.type === "offline") {
       try {
         await offlineEncode.mutateAsync(data);
-
-        alert(`✅ Initialization request sent successfully to localhost:8080/initialize!
-
-The following parameters were sent:
-- Client ID: 4b8bc0348ff54d3186a1fd2128ed7274
-- Client Secret: 28f2d59934a748da1d518eb76833440d
-- Serial Port: COM5
-- Sectors: 0000000000011111
-
-Offline encoding data:
-Building: ${data.buildingNumber}
-Floor: ${data.floorNumber}
-Lock MAC: ${data.lockMac}
-Card Number: ${data.cardNumber}
-Card Name: ${data.cardName}
-Card Type: ${data.cardType}
-Add Type: ${data.addType}
-Start Date: ${data.startDate}
-Expire Date: ${data.expireDate}`);
+        toast.success(
+          `✅ Initialization request sent successfully to localhost:8080/initialize!\n\nThe following parameters were sent:\n- Client ID: 4b8bc0348ff54d3186a1fd2128ed7274\n- Client Secret: 28f2d59934a748da1d518eb76833440d\n- Serial Port: COM5\n- Sectors: 0000000000011111\n\nOffline encoding data:\nBuilding: ${data.buildingNumber}\nFloor: ${data.floorNumber}\nLock MAC: ${data.lockMac}\nCard Number: ${data.cardNumber}\nCard Name: ${data.cardName}\nCard Type: ${data.cardType}\nAdd Type: ${data.addType}\nStart Date: ${data.startDate}\nExpire Date: ${data.expireDate}`
+        );
       } catch (error) {
         console.error("❌ Offline encoding error:", error);
-        alert(
+        toast.error(
           `❌ Offline encoding failed: ${
             error instanceof Error ? error.message : "Unknown error"
           }`
@@ -236,25 +222,25 @@ Expire Date: ${data.expireDate}`);
         const response = await gatewayEncode.mutateAsync(data);
 
         if (response.success) {
-          alert(`✅ Key encoded successfully via TTLock API!
-
-Guest: ${data.guestName}
-Room: ${data.roomNumber}
-Building: ${data.buildingNumber}
-Floor: ${data.floorNumber}
-Lock ID: ${data.lockId}
-Card Number: ${data.cardNumber}
-Card Name: ${data.cardName}
-
-API Response: ${JSON.stringify(response.data, null, 2)}`);
+          toast.success(
+            `✅ Key encoded successfully via TTLock API!\n\nGuest: ${
+              data.guestName
+            }\nRoom: ${data.roomNumber}\nBuilding: ${
+              data.buildingNumber
+            }\nFloor: ${data.floorNumber}\nLock ID: ${
+              data.lockId
+            }\nCard Number: ${data.cardNumber}\nCard Name: ${
+              data.cardName
+            }\n\nAPI Response: ${JSON.stringify(response.data, null, 2)}`
+          );
         } else {
-          alert(
+          toast.error(
             `❌ Key encoding failed: ${response.message || "Unknown error"}`
           );
         }
       } catch (error) {
         console.error("❌ Gateway encoding error:", error);
-        alert(
+        toast.error(
           `❌ Key encoding failed: ${
             error instanceof Error ? error.message : "Unknown error"
           }`
@@ -310,6 +296,7 @@ function showModal() {
 
   root.render(
     <QueryClientProvider client={queryClient}>
+      <Toaster />
       <ModalWithHooks
         guestName={guestName}
         roomNumber={roomNumber}

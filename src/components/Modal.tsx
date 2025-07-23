@@ -7,6 +7,7 @@ import {
 } from "../types/ttlock";
 import { ttlockApiService } from "../services/ttlockApi";
 import { useApiPost } from "../hooks/useApi";
+import { toast } from "sonner";
 
 const tabClasses = (active: boolean) =>
   `flex-1 py-2 px-4 text-center cursor-pointer rounded-t-lg font-medium transition-colors duration-150 ${
@@ -112,9 +113,9 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   // Placeholder handlers for buttons
-  const handleClearCard = () => alert("Clear Card clicked");
-  const handleReadCard = () => alert("Read Card clicked");
-  const handleWriteCard = () => alert("Write Card clicked");
+  const handleClearCard = () => toast("Clear Card clicked");
+  const handleReadCard = () => toast("Read Card clicked");
+  const handleWriteCard = () => toast("Write Card clicked");
 
   const createICCard = useApiPost("/api/ttlock/ic-card/public");
 
@@ -173,11 +174,11 @@ const Modal: React.FC<ModalProps> = ({
     if (cyclicConfig) payload.cyclicConfig = cyclicConfig;
     createICCard.mutate(payload, {
       onSuccess: (data) => {
-        alert("IC Card created successfully!");
+        toast.success("IC Card created successfully!");
         onClose();
       },
       onError: (error) => {
-        alert("Error: " + error.message);
+        toast.error("Error: " + error.message);
       },
     });
   };
@@ -922,18 +923,8 @@ const Modal: React.FC<ModalProps> = ({
                       />
                       <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
                     </svg>
-                    + Create IC Card
+                    Create IC Card
                   </button>
-                  {createICCard.isPending && (
-                    <div className="text-blue-600 text-sm mt-2">
-                      Creating...
-                    </div>
-                  )}
-                  {createICCard.isError && (
-                    <div className="text-red-600 text-sm mt-2">
-                      {createICCard.error.message}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
