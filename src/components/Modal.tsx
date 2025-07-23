@@ -7,57 +7,51 @@ import {
 } from "../types/ttlock";
 import { ttlockApiService } from "../services/ttlockApi";
 
+const tabClasses = (active: boolean) =>
+  `flex-1 py-2 px-4 text-center cursor-pointer rounded-t-lg font-medium transition-colors duration-150 ${
+    active ? "bg-white text-black shadow" : "bg-gray-100 text-gray-500"
+  }`;
+
+const inputClasses =
+  "w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-blue-200";
+
+const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
+
+const sectionTitle = "font-semibold text-lg mb-2 mt-4 flex items-center gap-2";
+
 const Modal: React.FC<ModalProps> = ({
   guestName,
   roomNumber,
   onClose,
   onEncode,
 }) => {
-  const [selectedType, setSelectedType] = useState<
-    "offline" | "gateway" | null
-  >(null);
+  const [selectedType, setSelectedType] = useState<"offline" | "gateway">(
+    "offline"
+  );
   const [offlineData, setOfflineData] = useState<Omit<OfflineData, "type">>({
-    buildingNumber: "",
-    floorNumber: "",
-    lockMac: "",
+    buildingNumber: "1",
+    floorNumber: "1",
+    lockMac: "4B:C1:BD:4C:0C:45",
     cardNumber: "",
     cardName: "",
     cardType: "",
     addType: "",
     startDate: "",
-    expireDate: "",
+    expireDate: "365",
   });
-  const [gatewayData, setGatewayData] = useState<Omit<GatewayData, "type">>({
-    guestName: guestName || "",
-    roomNumber: roomNumber || "",
-    buildingNumber: "",
-    floorNumber: "",
-    clientId: "",
-    accessToken: "",
-    lockId: "",
-    cardNumber: "",
-    cardName: "",
-    cardType: "",
-    addType: "",
-    startDate: "",
-    expireDate: "",
-  });
+  const [reverseLock, setReverseLock] = useState(true);
+  const [gatewayCardNumber, setGatewayCardNumber] = useState("");
+  const [gatewayCardName, setGatewayCardName] = useState("");
+  const [gatewayCardType, setGatewayCardType] = useState("Normal Card");
+  const [gatewayAccessType, setGatewayAccessType] =
+    useState("Permanent Access");
 
-  // Pre-populate the default values when component mounts
   useEffect(() => {
     const defaultValues = ttlockApiService.getDefaultValues();
-    setGatewayData((prev) => ({
-      ...prev,
-      clientId: defaultValues.clientId,
-      accessToken: defaultValues.accessToken,
-      lockId: defaultValues.lockId,
-      cardType: "keycard", // Default to keycard (maps to 1)
-      addType: "temporary", // Default to temporary (maps to 2)
-    }));
     setOfflineData((prev) => ({
       ...prev,
-      cardType: "keycard", // Default to keycard (maps to 1)
-      addType: "temporary", // Default to temporary (maps to 2)
+      cardType: "keycard",
+      addType: "temporary",
     }));
   }, []);
 
@@ -71,630 +65,541 @@ const Modal: React.FC<ModalProps> = ({
     }));
   };
 
-  const handleGatewayInputChange = (
-    field: keyof Omit<GatewayData, "type">,
-    value: string
-  ) => {
-    setGatewayData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleEncode = () => {
-    if (!selectedType) {
-      alert("Please select a type (Offline or Gateway)");
-      return;
-    }
-
-    if (selectedType === "offline") {
-      // Validate offline fields
-      if (
-        !offlineData.buildingNumber ||
-        !offlineData.floorNumber ||
-        !offlineData.lockMac ||
-        !offlineData.cardNumber ||
-        !offlineData.cardName ||
-        !offlineData.cardType ||
-        !offlineData.addType ||
-        (!offlineData.startDate && offlineData.addType !== "permanent") ||
-        (!offlineData.expireDate && offlineData.addType !== "permanent")
-      ) {
-        alert("Please fill in all required offline fields");
-        return;
-      }
-      onEncode({ type: "offline", ...offlineData });
-    } else {
-      // Validate gateway fields (excluding pre-set values)
-      if (
-        !gatewayData.guestName ||
-        !gatewayData.roomNumber ||
-        !gatewayData.buildingNumber ||
-        !gatewayData.floorNumber ||
-        !gatewayData.cardNumber ||
-        !gatewayData.cardName ||
-        (!gatewayData.startDate && gatewayData.addType !== "permanent") ||
-        (!gatewayData.expireDate && gatewayData.addType !== "permanent")
-      ) {
-        alert("Please fill in all required gateway fields");
-        return;
-      }
-      onEncode({ type: "gateway", ...gatewayData });
-    }
-  };
-
-  const renderTypeSelection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl border border-slate-200 shadow-sm">
-      <h3 className="text-xl font-bold text-slate-800 text-center mb-6 flex items-center justify-center gap-2">
-        <span className="text-2xl">🔧</span>
-        Select Encoding Type
-      </h3>
-      <div className="flex gap-4 justify-center">
-        <button
-          className={`group relative px-8 py-4 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[140px] flex items-center gap-3 justify-center shadow-lg ${
-            selectedType === "offline"
-              ? "bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-violet-500/25 ring-4 ring-violet-200"
-              : "bg-white text-slate-700 hover:bg-gradient-to-r hover:from-violet-50 hover:to-purple-50 hover:text-violet-700 border border-slate-200 hover:border-violet-300 hover:shadow-xl"
-          }`}
-          onClick={() => setSelectedType("offline")}
-        >
-          <span className="text-lg">📱</span>
-          <span>Offline</span>
-          {selectedType === "offline" && (
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-              ✓
-            </div>
-          )}
-        </button>
-        <button
-          className={`group relative px-8 py-4 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[140px] flex items-center gap-3 justify-center shadow-lg ${
-            selectedType === "gateway"
-              ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-blue-500/25 ring-4 ring-blue-200"
-              : "bg-white text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 hover:text-blue-700 border border-slate-200 hover:border-blue-300 hover:shadow-xl"
-          }`}
-          onClick={() => setSelectedType("gateway")}
-        >
-          <span className="text-lg">🌐</span>
-          <span>Gateway</span>
-          {selectedType === "gateway" && (
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-              ✓
-            </div>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderGuestSection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200 shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          👤
-        </div>
-        <h3 className="text-lg font-bold text-slate-800">Guest Information</h3>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-emerald-600">✨</span>
-            Guest Name *
-          </label>
-          <input
-            type="text"
-            className="modal-input-emerald"
-            value={gatewayData.guestName}
-            onChange={(e) =>
-              handleGatewayInputChange("guestName", e.target.value)
-            }
-            placeholder="Enter guest name"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-emerald-600">🏠</span>
-            Room Number *
-          </label>
-          <input
-            type="text"
-            className="modal-input-emerald"
-            value={gatewayData.roomNumber}
-            onChange={(e) =>
-              handleGatewayInputChange("roomNumber", e.target.value)
-            }
-            placeholder="Enter room number"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderLocationSection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-200 shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          🏢
-        </div>
-        <h3 className="text-lg font-bold text-slate-800">Location Details</h3>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-orange-600">🏗️</span>
-            Building Number
-          </label>
-          <input
-            type="text"
-            className="modal-input-orange"
-            value={
-              selectedType === "offline"
-                ? offlineData.buildingNumber
-                : gatewayData.buildingNumber
-            }
-            onChange={(e) =>
-              selectedType === "offline"
-                ? handleOfflineInputChange("buildingNumber", e.target.value)
-                : handleGatewayInputChange("buildingNumber", e.target.value)
-            }
-            placeholder="Enter building number"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-orange-600">🏬</span>
-            Floor Number
-          </label>
-          <input
-            type="text"
-            className="modal-input-orange"
-            value={
-              selectedType === "offline"
-                ? offlineData.floorNumber
-                : gatewayData.floorNumber
-            }
-            onChange={(e) =>
-              selectedType === "offline"
-                ? handleOfflineInputChange("floorNumber", e.target.value)
-                : handleGatewayInputChange("floorNumber", e.target.value)
-            }
-            placeholder="Enter floor number"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSystemSection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl border border-red-200 shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          ⚙️
-        </div>
-        <h3 className="text-lg font-bold text-slate-800">
-          System Configuration
-        </h3>
-      </div>
-      <div className="space-y-2">
-        <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-          <span className="text-red-600">🔒</span>
-          Lock MAC Address
-        </label>
-        <input
-          type="text"
-          className="modal-input-red"
-          value={selectedType === "offline" ? offlineData.lockMac : ""}
-          onChange={(e) => handleOfflineInputChange("lockMac", e.target.value)}
-          placeholder="Enter lock MAC address"
-        />
-      </div>
-    </div>
-  );
-
-  const renderGatewaySection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          🔗
-        </div>
-        <h3 className="text-lg font-bold text-slate-800">
-          Gateway Configuration
-        </h3>
-      </div>
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-              <span className="text-indigo-600">🆔</span>
-              Client ID (Pre-configured)
-            </label>
-            <input
-              type="text"
-              className="modal-input-indigo"
-              value={gatewayData.clientId}
-              readOnly
-              style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-              <span className="text-indigo-600">🔑</span>
-              Access Token (Pre-configured)
-            </label>
-            <input
-              type="text"
-              className="modal-input-indigo"
-              value={gatewayData.accessToken}
-              readOnly
-              style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-            <span className="text-indigo-600">🔐</span>
-            Lock ID (Pre-configured)
-          </label>
-          <input
-            type="text"
-            className="modal-input-indigo"
-            value={gatewayData.lockId}
-            readOnly
-            style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderCardSection = () => (
-    <div className="mb-8 p-6 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl border border-cyan-200 shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-          💳
-        </div>
-        <h3 className="text-lg font-bold text-slate-800">Card Information</h3>
-      </div>
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-              <span className="text-cyan-600">🔢</span>
-              Card Number
-            </label>
-            <input
-              type="text"
-              className="modal-input-cyan"
-              value={
-                selectedType === "offline"
-                  ? offlineData.cardNumber
-                  : gatewayData.cardNumber
-              }
-              onChange={(e) =>
-                selectedType === "offline"
-                  ? handleOfflineInputChange("cardNumber", e.target.value)
-                  : handleGatewayInputChange("cardNumber", e.target.value)
-              }
-              placeholder="Enter card number"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-              <span className="text-cyan-600">📝</span>
-              Card Name
-            </label>
-            <input
-              type="text"
-              className="modal-input-cyan"
-              value={
-                selectedType === "offline"
-                  ? offlineData.cardName
-                  : gatewayData.cardName
-              }
-              onChange={(e) =>
-                selectedType === "offline"
-                  ? handleOfflineInputChange("cardName", e.target.value)
-                  : handleGatewayInputChange("cardName", e.target.value)
-              }
-              placeholder="Enter card name"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-              <span className="text-cyan-600">📱</span>
-              Card Type (Pre-configured: Keycard)
-            </label>
-            <input
-              type="text"
-              className="modal-input-cyan"
-              value="🔑 Keycard"
-              readOnly
-              style={{ backgroundColor: "#f8fafc", cursor: "not-allowed" }}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-              <span className="text-cyan-600">➕</span>
-              Add Type (Default: Temporary)
-            </label>
-            <select
-              className="modal-input-cyan modal-select"
-              value={
-                selectedType === "offline"
-                  ? offlineData.addType
-                  : gatewayData.addType
-              }
-              onChange={(e) =>
-                selectedType === "offline"
-                  ? handleOfflineInputChange("addType", e.target.value)
-                  : handleGatewayInputChange("addType", e.target.value)
-              }
-            >
-              <option value="temporary">⏱️ Temporary</option>
-              <option value="permanent">∞ Permanent</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderTimeSection = () => {
-    const currentAddType =
-      selectedType === "offline" ? offlineData.addType : gatewayData.addType;
-    const isPermanent = currentAddType === "permanent";
-
-    return (
-      <div className="mb-8 p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl border border-pink-200 shadow-sm">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-            ⏰
-          </div>
-          <h3 className="text-lg font-bold text-slate-800">
-            Time Configuration
-          </h3>
-        </div>
-
-        {isPermanent ? (
-          <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
-            <div className="text-4xl mb-2">∞</div>
-            <h4 className="text-lg font-semibold text-blue-800 mb-2">
-              Permanent Access
-            </h4>
-            <p className="text-blue-600 text-sm">
-              This card will have permanent access with no expiration date.
-              <br />
-              Start and end dates will be set to 0 automatically.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-                <span className="text-pink-600">🚀</span>
-                Start Date & Time
-              </label>
-              <input
-                type="datetime-local"
-                className="modal-input-pink"
-                value={
-                  selectedType === "offline"
-                    ? offlineData.startDate
-                    : gatewayData.startDate
-                }
-                onChange={(e) =>
-                  selectedType === "offline"
-                    ? handleOfflineInputChange("startDate", e.target.value)
-                    : handleGatewayInputChange("startDate", e.target.value)
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 font-semibold text-slate-700 text-sm">
-                <span className="text-pink-600">⏳</span>
-                Expire Date & Time
-              </label>
-              <input
-                type="datetime-local"
-                className="modal-input-pink"
-                value={
-                  selectedType === "offline"
-                    ? offlineData.expireDate
-                    : gatewayData.expireDate
-                }
-                onChange={(e) =>
-                  selectedType === "offline"
-                    ? handleOfflineInputChange("expireDate", e.target.value)
-                    : handleGatewayInputChange("expireDate", e.target.value)
-                }
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
+  // Placeholder handlers for buttons
+  const handleClearCard = () => alert("Clear Card clicked");
+  const handleReadCard = () => alert("Read Card clicked");
+  const handleWriteCard = () => alert("Write Card clicked");
 
   return (
     <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
       onClick={onClose}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999,
-        padding: "1rem",
-        pointerEvents: "auto",
-      }}
+      style={{ pointerEvents: "auto" }}
     >
       <div
+        className="bg-white rounded-2xl border border-gray-200 shadow-xl max-w-lg w-full mx-auto relative z-50 overflow-y-auto max-h-screen p-6"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundColor: "white",
-          borderRadius: "1.5rem",
-          width: "100%",
-          maxWidth: "56rem",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-          position: "relative",
-          border: "1px solid #e2e8f0",
-        }}
+        style={{ pointerEvents: "auto" }}
       >
-        <div
-          style={{
-            position: "sticky",
-            top: 0,
-            background: "linear-gradient(to right, #0f172a, #1e293b, #0f172a)",
-            color: "white",
-            padding: "1.5rem",
-            borderTopLeftRadius: "1.5rem",
-            borderTopRightRadius: "1.5rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            zIndex: 10,
-            boxShadow:
-              "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <div
-              style={{
-                width: "3.5rem",
-                height: "3.5rem",
-                background:
-                  "linear-gradient(to bottom right, #facc15, #f97316)",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.5rem",
-                boxShadow:
-                  "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-              }}
-            >
-              🔑
+        {/* Header */}
+        <div className="flex items-center justify-between px-2 pt-2 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-100 p-2 rounded">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <rect width="24" height="24" rx="6" fill="#2563EB" />
+                <rect x="6" y="7" width="12" height="10" rx="2" fill="#fff" />
+                <rect x="9" y="10" width="6" height="2" rx="1" fill="#2563EB" />
+              </svg>
             </div>
             <div>
-              <h2
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                Key Encoding Assistant
-              </h2>
-              <p style={{ fontSize: "0.875rem", color: "#cbd5e1" }}>
-                Configure your smart lock credentials
-              </p>
+              <div className="font-bold text-xl">Card Encoder</div>
+              <div className="text-gray-500 text-sm">
+                Configure access card settings
+              </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: "3rem",
-              height: "3rem",
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              color: "white",
-              borderRadius: "50%",
-              transition: "all 0.2s",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.25rem",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded flex items-center">
+              <svg
+                className="w-2 h-2 mr-1"
+                fill="currentColor"
+                viewBox="0 0 8 8"
+              >
+                <circle cx="4" cy="4" r="4" />
+              </svg>
+              Offline
+            </span>
+            <button
+              className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
         </div>
-
-        <div
-          style={{
-            padding: "2rem",
-            background: "linear-gradient(to bottom right, #f8fafc, white)",
-          }}
-        >
-          {renderTypeSelection()}
-          {selectedType === "gateway" && renderGuestSection()}
-          {selectedType && renderLocationSection()}
-          {selectedType === "offline" && renderSystemSection()}
-          {selectedType === "gateway" && renderGatewaySection()}
-          {selectedType && renderCardSection()}
-          {selectedType && renderTimeSection()}
-        </div>
-
-        <div
-          style={{
-            position: "sticky",
-            bottom: 0,
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "1rem",
-            padding: "1.5rem",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            borderTop: "1px solid #e2e8f0",
-            borderBottomLeftRadius: "1.5rem",
-            borderBottomRightRadius: "1.5rem",
-          }}
-        >
-          <button
-            onClick={onClose}
-            style={{
-              padding: "0.75rem 1.5rem",
-              border: "1px solid #cbd5e1",
-              backgroundColor: "white",
-              borderRadius: "0.75rem",
-              fontSize: "0.875rem",
-              fontWeight: "600",
-              transition: "all 0.2s",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-              cursor: "pointer",
-            }}
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 mb-4 px-2 pt-2">
+          <div
+            className={tabClasses(selectedType === "offline")}
+            onClick={() => setSelectedType("offline")}
           >
-            <span>❌</span>
-            Cancel
-          </button>
-          <button
-            onClick={handleEncode}
-            disabled={!selectedType}
-            style={{
-              padding: "0.75rem 2rem",
-              borderRadius: "0.75rem",
-              fontSize: "0.875rem",
-              fontWeight: "600",
-              transition: "all 0.2s",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              boxShadow:
-                "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-              cursor: selectedType ? "pointer" : "not-allowed",
-              background: selectedType
-                ? "linear-gradient(to right, #10b981, #059669)"
-                : "#d1d5db",
-              color: selectedType ? "white" : "#9ca3af",
-              border: "none",
-            }}
+            Encoder
+          </div>
+          <div
+            className={tabClasses(selectedType === "gateway")}
+            onClick={() => setSelectedType("gateway")}
           >
-            <span>🚀</span>
-            Encode Key
-          </button>
+            Gateway
+          </div>
         </div>
+        {/* Tab Content */}
+        {selectedType === "offline" && (
+          <div className="pb-6">
+            {/* Building & Floor */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="3"
+                      y="7"
+                      width="18"
+                      height="10"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <rect
+                      x="7"
+                      y="10"
+                      width="2"
+                      height="2"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                    <rect
+                      x="15"
+                      y="10"
+                      width="2"
+                      height="2"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Building
+                </label>
+                <input
+                  className={inputClasses}
+                  value={offlineData.buildingNumber}
+                  onChange={(e) =>
+                    handleOfflineInputChange("buildingNumber", e.target.value)
+                  }
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2v20M2 12h20"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  Floor
+                </label>
+                <input
+                  className={inputClasses}
+                  value={offlineData.floorNumber}
+                  onChange={(e) =>
+                    handleOfflineInputChange("floorNumber", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+            {/* Device MAC Address */}
+            <div className="mb-4">
+              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                <span className="text-lg font-bold">+</span> Device MAC Address
+              </label>
+              <input
+                className={inputClasses}
+                value={offlineData.lockMac}
+                onChange={(e) =>
+                  handleOfflineInputChange("lockMac", e.target.value)
+                }
+                placeholder="Enter the MAC address of the target device"
+              />
+              <div className="text-xs text-gray-400 mt-1">
+                Enter the MAC address of the target device
+              </div>
+            </div>
+            {/* Expiration */}
+            <div className="mb-4">
+              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                Expiration (days)
+              </label>
+              <input
+                className={inputClasses}
+                value={offlineData.expireDate}
+                onChange={(e) =>
+                  handleOfflineInputChange("expireDate", e.target.value)
+                }
+              />
+              <div className="text-xs text-gray-400 mt-1">
+                Number of days until card expires
+              </div>
+            </div>
+            {/* Divider */}
+            <hr className="my-6" />
+            {/* Security Options */}
+            <div className="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-2 text-base">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <path d="M12 16v-4" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="12" cy="8" r="1" fill="currentColor" />
+                </svg>
+                Security Options
+              </label>
+              <label className="flex items-center space-x-2 font-medium">
+                <input
+                  type="checkbox"
+                  checked={reverseLock}
+                  onChange={(e) => setReverseLock(e.target.checked)}
+                  className="form-checkbox"
+                />
+                <span>Allow Reverse Lock</span>
+              </label>
+              <div className="text-xs text-gray-400 mt-1">
+                Enable reverse lock functionality for enhanced security
+              </div>
+            </div>
+            {/* Buttons */}
+            <div className="flex justify-center space-x-4 mt-6">
+              <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <rect
+                    x="3"
+                    y="6"
+                    width="18"
+                    height="14"
+                    rx="2"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <path
+                    d="M8 6V4a4 4 0 1 1 8 0v2"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                </svg>
+                Clear Card
+              </button>
+              <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <circle cx="12" cy="12" r="3" fill="currentColor" />
+                </svg>
+                Read Card
+              </button>
+              <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <rect
+                    x="4"
+                    y="4"
+                    width="16"
+                    height="16"
+                    rx="2"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
+                  <path d="M12 8v8" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                Write Card
+              </button>
+            </div>
+          </div>
+        )}
+        {selectedType === "gateway" && (
+          <div className="pb-6">
+            <div className="p-0">
+              <label className="flex items-center gap-1 font-semibold text-gray-800 mb-4 text-lg">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <rect
+                    x="3"
+                    y="7"
+                    width="18"
+                    height="10"
+                    rx="2"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <rect
+                    x="7"
+                    y="10"
+                    width="2"
+                    height="2"
+                    rx="1"
+                    fill="currentColor"
+                  />
+                  <rect
+                    x="15"
+                    y="10"
+                    width="2"
+                    height="2"
+                    rx="1"
+                    fill="currentColor"
+                  />
+                </svg>
+                Create New Card
+              </label>
+              <div className="mb-4">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="3"
+                      y="7"
+                      width="18"
+                      height="10"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <rect
+                      x="7"
+                      y="10"
+                      width="2"
+                      height="2"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                    <rect
+                      x="15"
+                      y="10"
+                      width="2"
+                      height="2"
+                      rx="1"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Card Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className={inputClasses}
+                  placeholder="Enter card number"
+                  value={gatewayCardNumber}
+                  onChange={(e) => setGatewayCardNumber(e.target.value)}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2v20M2 12h20"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  Card Name (Optional)
+                </label>
+                <input
+                  className={inputClasses}
+                  placeholder="Enter a name for this card"
+                  value={gatewayCardName}
+                  onChange={(e) => setGatewayCardName(e.target.value)}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="4"
+                      y="4"
+                      width="16"
+                      height="16"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                  Card Type
+                </label>
+                <select
+                  className={inputClasses}
+                  value={gatewayCardType}
+                  onChange={(e) => setGatewayCardType(e.target.value)}
+                >
+                  <option>Normal Card</option>
+                  <option>VIP Card</option>
+                  <option>Guest Card</option>
+                </select>
+              </div>
+              <div className="mb-8">
+                <label className="flex items-center gap-1 font-semibold text-gray-800 mb-1 text-sm">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                  </svg>
+                  Access Type
+                </label>
+                <select
+                  className={inputClasses}
+                  value={gatewayAccessType}
+                  onChange={(e) => setGatewayAccessType(e.target.value)}
+                >
+                  <option>Permanent Access</option>
+                  <option>Temporary Access</option>
+                </select>
+              </div>
+              <div className="flex justify-center space-x-4 mt-6">
+                <button
+                  className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
+                  onClick={onClose}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="3"
+                      y="6"
+                      width="18"
+                      height="14"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <path
+                      d="M8 6V4a4 4 0 1 1 8 0v2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  Cancel
+                </button>
+                <button className="py-3 px-4 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 flex items-center justify-center gap-2">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect
+                      x="4"
+                      y="4"
+                      width="16"
+                      height="16"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <path d="M8 12h8" stroke="currentColor" strokeWidth="2" />
+                    <path d="M12 8v8" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                  + Create IC Card
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
