@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "sonner";
 
 const tabClasses = (active: boolean) =>
   `flex-1 py-2 px-4 text-center cursor-pointer rounded-t-lg font-medium transition-colors duration-150 ${
@@ -27,11 +28,11 @@ const CardEncoder: React.FC = () => {
   const [accessType, setAccessType] = useState("Permanent Access");
 
   // Handlers (placeholders)
-  const handleClearCard = () => alert("Clear Card clicked");
-  const handleReadCard = () => alert("Read Card clicked");
-  const handleWriteCard = () => alert("Write Card clicked");
-  const handleCreateICCard = () => alert("Create IC Card clicked");
-  const handleCancel = () => alert("Cancel clicked");
+  const handleClearCard = () => toast("Clear Card clicked");
+  const handleReadCard = () => toast("Read Card clicked");
+  const handleWriteCard = () => toast("Write Card clicked");
+  const handleCreateICCard = () => toast("Create IC Card clicked");
+  const handleCancel = () => toast("Cancel clicked");
 
   return (
     <div className="max-w-lg mx-auto bg-white rounded-lg shadow-lg p-6 relative">
